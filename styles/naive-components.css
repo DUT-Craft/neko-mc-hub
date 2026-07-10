@@ -1,0 +1,445 @@
+/* Naive UI integration layer. Domain layouts remain in legacy.css so the
+   approved visual composition stays stable while controls become real components. */
+.app-shell {
+  min-height: 100vh;
+}
+
+.demo-banner-shell {
+  width: min(100% - 32px, var(--container));
+  margin: 14px auto -8px;
+}
+
+.demo-banner.n-alert {
+  border: 1px solid color-mix(in oklch, var(--sky-strong), transparent 58%);
+  background: color-mix(in oklch, var(--sky), white 80%);
+  box-shadow: none;
+}
+
+.demo-banner .n-alert-body__title {
+  font-family: var(--font-display);
+  letter-spacing: 0.035em;
+}
+
+.nav-link.n-button {
+  min-height: 40px;
+  padding: 8px 12px;
+}
+
+.nav-link.n-button .n-button__content {
+  white-space: nowrap;
+}
+
+.online-pill.n-tag {
+  height: auto;
+  min-height: 36px;
+  padding: 7px 11px;
+}
+
+.n-button {
+  letter-spacing: 0;
+}
+
+.n-button .n-button__content {
+  font-family: var(--font-cute);
+  letter-spacing: 0.035em;
+}
+
+.n-card {
+  color: var(--fg);
+}
+
+.n-card > .n-card__content {
+  position: relative;
+  z-index: 1;
+}
+
+.weekly-event.n-card {
+  min-height: 100%;
+  overflow: hidden;
+  border: 2px solid color-mix(in oklch, var(--gold), transparent 24%);
+  background:
+    linear-gradient(135deg, color-mix(in oklch, var(--gold), white 84%), transparent 52%),
+    var(--cream-clean, var(--surface));
+  box-shadow: var(--shadow);
+}
+
+.weekly-event > .n-card__content {
+  padding: 0 !important;
+}
+
+.weekly-event__content {
+  min-height: 360px;
+  padding: 22px;
+  display: grid;
+  align-content: start;
+  gap: 20px;
+}
+
+.weekly-event__content h2 {
+  margin-top: 5px;
+}
+
+.eyebrow {
+  color: var(--action-strong);
+  font-family: var(--font-cute);
+  font-weight: 700;
+}
+
+.event-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.event-facts > div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid color-mix(in oklch, var(--border), transparent 42%);
+  border-radius: 6px;
+  background: color-mix(in oklch, white, transparent 28%);
+}
+
+.event-facts span,
+.event-facts strong {
+  display: block;
+}
+
+.event-facts span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.event-facts strong {
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.activity-card.n-card,
+.announcement-card.n-card,
+.server-card.n-card {
+  border: 1px solid color-mix(in oklch, var(--border), transparent 36%);
+  background: color-mix(in oklch, var(--cream-clean, var(--surface)), white 8%);
+  box-shadow: none;
+}
+
+.activity-card > .n-card__content {
+  min-height: 270px;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.activity-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.activity-card p,
+.announcement-card p {
+  color: var(--muted);
+}
+
+.activity-card dl {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.activity-card dl > div {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.activity-card dt {
+  color: var(--muted);
+}
+
+.activity-card dd {
+  margin: 0;
+}
+
+.server-list {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.server-card {
+  border-left: 4px solid var(--action) !important;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.server-card:hover,
+.server-card:focus-visible {
+  transform: translateY(-1px);
+  outline: 2px solid color-mix(in oklch, var(--sky-strong), transparent 45%);
+  outline-offset: 2px;
+}
+
+.server-card--selected {
+  background: color-mix(in oklch, var(--action), white 91%) !important;
+  border-color: color-mix(in oklch, var(--action), transparent 25%) !important;
+}
+
+.server-card--maintenance {
+  border-left-color: var(--gold) !important;
+}
+
+.server-card__row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(120px, 0.8fr) auto minmax(190px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.server-card__identity {
+  min-width: 0;
+}
+
+.server-card__identity p {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.server-card code {
+  min-width: 0;
+  overflow: hidden;
+  padding: 7px 9px;
+  border-radius: 5px;
+  background: color-mix(in oklch, var(--sky), white 82%);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.server-terminal {
+  grid-template-columns: minmax(0, 1.35fr) minmax(310px, 0.65fr);
+}
+
+.terminal-panel.n-card {
+  position: sticky;
+  top: 92px;
+  height: fit-content;
+  border: 2px solid color-mix(in oklch, var(--border), transparent 24%);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.terminal-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.announcement-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.announcement-card > .n-card__content {
+  display: grid;
+  gap: 12px;
+}
+
+.announcement-card time {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.notice-sign.n-card,
+.duty-board.n-card,
+.task-menu.n-card,
+.commission-form.n-card,
+.prep-board.n-card,
+.toolbox-note.n-card,
+.inventory-panel.n-card,
+.polaroid.n-card,
+.entry-primary.n-card {
+  border: 2px solid color-mix(in oklch, var(--border), transparent 28%);
+  box-shadow: var(--shadow);
+}
+
+.notice-sign > .n-card__content,
+.duty-board > .n-card__content,
+.prep-board > .n-card__content,
+.toolbox-note > .n-card__content {
+  display: grid;
+  gap: 16px;
+}
+
+.commission-board {
+  align-items: start;
+}
+
+.task-menu.n-card,
+.commission-form.n-card {
+  margin: 0;
+}
+
+.task-menu > .n-card__content {
+  display: grid;
+  gap: 16px;
+}
+
+.task-menu .n-tabs,
+.application-mode {
+  width: 100%;
+}
+
+.application-mode {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.application-mode .n-radio-button {
+  width: 100%;
+}
+
+.application-mode .n-radio-button__state-border,
+.application-mode .n-radio-button__border {
+  border-radius: 6px;
+}
+
+.application-mode .n-radio-button__label {
+  width: 100%;
+  text-align: left;
+}
+
+.commission-form > .n-card__content {
+  display: grid;
+  gap: 22px;
+}
+
+.form-disclaimer {
+  max-width: 54ch;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.inventory-panel > .n-card__content {
+  display: grid;
+  gap: 18px;
+}
+
+.inventory-slot.n-card > .n-card__content {
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.inventory-slot em {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.entry-primary.n-card {
+  cursor: pointer;
+}
+
+.entry-primary.n-card > .n-card__content {
+  min-height: 220px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: center;
+  align-items: center;
+  gap: 18px;
+}
+
+.polaroid.n-card > .n-card__content {
+  padding: 10px !important;
+}
+
+.polaroid img {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.polaroid > .n-card__content > div {
+  padding: 10px 7px 6px;
+}
+
+@media (max-width: 1000px) {
+  .server-card__row {
+    grid-template-columns: auto minmax(130px, 1fr) auto;
+  }
+
+  .server-card__row code {
+    grid-column: 2 / -1;
+  }
+
+  .server-terminal {
+    grid-template-columns: 1fr;
+  }
+
+  .terminal-panel.n-card {
+    position: static;
+  }
+}
+
+@media (max-width: 780px) {
+  .demo-banner-shell {
+    width: calc(100% - 20px);
+  }
+
+  .event-facts,
+  .activity-grid,
+  .announcement-list {
+    grid-template-columns: 1fr;
+  }
+
+  .weekly-event__content {
+    min-height: 0;
+  }
+
+  .server-card__row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .server-card__row > .n-space,
+  .server-card__row code,
+  .server-card__row > .n-button {
+    grid-column: 2;
+    width: 100%;
+  }
+
+  .server-card__row code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .commission-board {
+    grid-template-columns: 1fr;
+  }
+
+  .task-menu .n-tabs-nav {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .server-card > .n-card__content {
+    padding: 14px !important;
+  }
+
+  .server-card__row {
+    gap: 9px;
+  }
+}

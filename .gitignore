@@ -4,6 +4,7 @@ node_modules/
 dist/
 tmp/
 output/
+.playwright-cli/
 .env
 .env.*
 *.log

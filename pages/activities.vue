@@ -1,78 +1,45 @@
 <template>
-<main class="page" data-od-id="activities-main">
-    <section class="page-title compact-title" data-od-id="activities-title">
+  <main class="page">
+    <section class="page-title compact-title">
       <span class="page-kicker">活动</span>
       <h1>活动任务板</h1>
-      <p class="lead">先看时间、人数、整合包和入口，再决定要不要加入。</p>
+      <p class="lead">先看时间、服务器、整合包和参与方式，再决定今晚去哪里。</p>
     </section>
 
-    <section class="task-board-layout" data-od-id="weekly-speedrun-board">
-      <article class="task-card task-card-primary" data-od-id="speedrun-primary-card">
-        <div class="tag-row"><span class="n-tag tag-active">本周主活动</span><span class="n-tag tag-event">活动服</span><span class="n-tag tag-gold">20:00-22:00</span><span class="n-tag">12/30 人</span></div>
-        <h2>本周速通挑战</h2>
-        <p>玩家可以快速开玩、围观或补位。队长会在开始前 10 分钟确认分组和路线。</p>
-        <div class="task-meta">
-          <span><strong>集合</strong>19:45 大厅服</span>
-          <span><strong>开局</strong>20:00 活动服</span>
-          <span><strong>需求</strong>不需要整合包</span>
-        </div>
-        <div class="button-row">
-          <button class="n-button primary" type="button" data-copy="event.neko-mc.club">复制活动服地址</button>
-          <button class="n-button" type="button" data-copy="QQ群文件 / 速通规则公告">复制规则位置</button>
-        </div>
-      </article>
-
-      <aside class="prep-board" data-od-id="activity-prepare-card">
+    <section class="task-board-layout">
+      <WeeklyEvent :activity="weeklyActivity" :server="weeklyServer" />
+      <NCard class="prep-board" :bordered="false">
         <h2>出发前检查</h2>
-        <div class="timeline">
-          <div class="timeline-item"><span class="time">19:45</span><p>到大厅服集合，确认是否要补位。</p></div>
-          <div class="timeline-item"><span class="time">19:55</span><p>队长发布路线和规则提醒。</p></div>
-          <div class="timeline-item"><span class="time">20:00</span><p>活动服统一开局。</p></div>
-        </div>
-      </aside>
+        <NTimeline>
+          <NTimelineItem time="19:45" title="大厅集合">确认分组和是否需要补位。</NTimelineItem>
+          <NTimelineItem time="19:55" title="规则提醒">队长发布路线和注意事项。</NTimelineItem>
+          <NTimelineItem time="20:00" title="统一开局" type="success">活动服正式开始。</NTimelineItem>
+        </NTimeline>
+      </NCard>
     </section>
 
-    <section class="section" data-od-id="activity-tasks">
-      <div class="section-head">
-        <h2>可接任务</h2>
-        <p>每个任务只保留玩家要判断的关键信息。</p>
-      </div>
-      <div class="task-list">
-        <article class="task-ticket" data-od-id="activity-card-minigame">
-          <span class="pixi pixi-event" aria-hidden="true"></span>
-          <h3>方块接力赛</h3>
-          <span class="n-tag tag-event">小游戏</span>
-          <span class="n-tag tag-active">活动中</span>
-          <code>event.neko-mc.club</code>
-          <button class="n-button" type="button" data-copy="event.neko-mc.club">复制地址</button>
-        </article>
-        <article class="task-ticket" data-od-id="activity-card-adventure">
-          <span class="pixi pixi-explore" aria-hidden="true"></span>
-          <h3>暮色探索小队</h3>
-          <span class="n-tag tag-event">冒险组</span>
-          <span class="n-tag tag-gold">需要整合包</span>
-          <code>adventure.neko-mc.club</code>
-          <button class="n-button" type="button" data-copy="adventure.neko-mc.club">复制地址</button>
-        </article>
-        <article class="task-ticket" data-od-id="activity-card-temp">
-          <span class="pixi pixi-build" aria-hidden="true"></span>
-          <h3>建筑临时赛道</h3>
-          <span class="n-tag tag-event">小组临时服</span>
-          <span class="n-tag">6/16 人</span>
-          <code>temp.neko-mc.club</code>
-          <button class="n-button" type="button" data-copy="temp.neko-mc.club">复制地址</button>
-        </article>
-      </div>
+    <section class="section">
+      <div class="section-head"><div><span class="page-kicker">长期活动</span><h2>持续招募</h2></div><p>长期项目紧跟本周活动展示。</p></div>
+      <ActivitySection :activities="longTermActivities" />
     </section>
 
-    <section class="section pack-shelf" data-od-id="activity-downloads">
-      <a class="inventory-slot" href="#" data-od-id="download-adventure-pack"><span class="pixi pixi-pack" aria-hidden="true"></span><strong>冒险组整合包</strong><em>QQ群文件为准</em></a>
-      <a class="inventory-slot" href="/wiki" data-od-id="download-hmcl"><span class="pixi pixi-guide" aria-hidden="true"></span><strong>HMCL 下载</strong><em>推荐启动器</em></a>
-      <a class="inventory-slot" href="/wiki" data-od-id="download-pcl"><span class="pixi pixi-guide" aria-hidden="true"></span><strong>PCL 下载</strong><em>备用入口</em></a>
+    <section class="section">
+      <div class="section-head"><div><span class="page-kicker">限时任务</span><h2>即将发生</h2></div><p>活动状态按优先级排列。</p></div>
+      <ActivitySection :activities="limitedActivities" />
+    </section>
+
+    <section class="section pack-shelf">
+      <NCard class="inventory-slot" :bordered="false"><span class="pixi pixi-pack" aria-hidden="true"></span><strong>冒险组整合包</strong><em>QQ群文件为准</em></NCard>
+      <NCard class="inventory-slot" :bordered="false"><span class="pixi pixi-guide" aria-hidden="true"></span><strong>HMCL 下载</strong><em>链接等待真实内容</em></NCard>
+      <NCard class="inventory-slot" :bordered="false"><span class="pixi pixi-guide" aria-hidden="true"></span><strong>PCL 下载</strong><em>链接等待真实内容</em></NCard>
     </section>
   </main>
 </template>
 
 <script setup lang="ts">
+import { NCard, NTimeline, NTimelineItem } from "naive-ui";
+import { useDemoContent } from "~/composables/useDemoContent";
+const { servers, weeklyActivity, longTermActivities, limitedActivities } = useDemoContent();
+const weeklyServer = computed(() => servers.value.find((server) => server.id === weeklyActivity.value?.serverId));
 useHead({ title: "限时活动与小组服务器 - 猫娘社 MC 主站" });
 </script>
