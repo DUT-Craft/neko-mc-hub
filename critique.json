@@ -1,0 +1,38 @@
+{
+  "kind": "critique-panel",
+  "score": 4,
+  "axes": {
+    "philosophy": {
+      "score": 4,
+      "notes": "本轮聚焦用户标注的同级入口一致性，继续使用 Minecraft 大厅地图隐喻，而不是把入口做成普通后台卡片。"
+    },
+    "hierarchy": {
+      "score": 4,
+      "notes": "告示牌和箱子现在与活动服、生电服、大厅服、资源服一样拥有顶部像素物件图标，地图节点层级更一致。"
+    },
+    "execution": {
+      "score": 4,
+      "notes": "在 pages/home.vue 和 home.html 中为两个节点补齐 pixi-sign 与 pixi-chest；在 styles.css 中新增像素告示牌和像素箱子图标样式。"
+    },
+    "specificity": {
+      "score": 4,
+      "notes": "新增图标对应用户明确要求的“我的世界的告示牌 / 我的世界的箱子”，没有使用泛用图标或装饰占位。"
+    },
+    "restraint": {
+      "score": 4,
+      "notes": "没有改动页面结构、文案、配色和路由；只补齐同级节点的物件图标，保持原有奶油色与浅草绿视觉。"
+    }
+  },
+  "verifyScorecard": {
+    "framework": "Nuxt 4.4.8",
+    "staticCheck": "passed",
+    "nuxtBuild": "passed",
+    "visualScreenshot": "not rerun",
+    "changedFiles": [
+      "pages/home.vue",
+      "home.html",
+      "styles.css",
+      "critique.json"
+    ]
+  }
+}

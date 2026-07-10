@@ -1,0 +1,15 @@
+node_modules/
+.nuxt/
+.output/
+dist/
+tmp/
+output/
+.env
+.env.*
+*.log
+
+# Local design-review screenshots; keep the one used by the history page.
+mra*.png
+mrb*.png
+!mraw9rm5-QQ_1783443597445.png
+assets_test-*.png
