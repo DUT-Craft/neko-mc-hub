@@ -32,6 +32,11 @@ export default defineNuxtConfig({
       routes: ["/", "/home", "/servers", "/activities", "/announcements", "/applications", "/wiki", "/history"]
     }
   },
+  vite: {
+    ssr: {
+      noExternal: ["naive-ui", "vueuc", "date-fns"]
+    }
+  },
   typescript: {
     typeCheck: true
   }
