@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NUXT_APP_BASE_URL: /neko-mc-hub/
+      NUXT_PUBLIC_API_BASE: ""
+      NUXT_PUBLIC_ENABLE_DEMO_FALLBACK: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
