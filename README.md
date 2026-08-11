@@ -2,6 +2,8 @@
 
 大学 Minecraft 社团主站的 Nuxt 4 前端。首页优先展示本周活动、长期活动、当前在线服务器和完整服务器列表；管理后台通过 Spring Boot 后端维护服务器、活动、公告、Wiki、历史记录和图片。
 
+配套后端仓库：[DUT-Craft/NekoProjectBackend](https://github.com/DUT-Craft/NekoProjectBackend)。本地首次运行时先启动后端并确认健康检查为 `UP`，再启动本仓库；不要把两个仓库的命令混用。
+
 ## 环境要求
 
 - Node.js 22 或更高版本
@@ -9,6 +11,8 @@
 - 已启动的猫娘社主站后端
 
 ## 本地开发
+
+先按照后端 README 启动 Spring Boot，并确认 `http://127.0.0.1:8080/actuator/health` 返回 `UP`。然后在本仓库根目录执行：
 
 ```powershell
 npm ci
