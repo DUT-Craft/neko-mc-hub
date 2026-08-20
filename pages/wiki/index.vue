@@ -10,13 +10,13 @@
       <div class="wiki-entry__grid">
         <div v-if="lobby" class="wiki-entry__content">
           <span class="section-label">新人第一步</span>
-          <h2>先进入大厅服</h2>
+          <h2>先进入{{ lobby.id === "lobby" ? "大厅服" : lobby.name }}</h2>
           <p>进入后查看传送牌，再前往活动服、生电服或其他长期服务器。</p>
           <div class="address-line">
-            <span>大厅服地址</span>
+            <span>{{ lobby.id === "lobby" ? "大厅服地址" : `${lobby.name}地址` }}</span>
             <strong>{{ lobby?.address }}</strong>
           </div>
-          <CopyButton :value="lobby?.address || ''" label="复制大厅服地址" primary />
+          <CopyButton :value="lobby?.address || ''" :label="`复制${lobby.id === 'lobby' ? '大厅服' : lobby.name}地址`" primary />
         </div>
         <div v-else class="wiki-entry__content"><NEmpty description="大厅服信息暂不可用" /></div>
         <img :src="sitePath('/assets/bg-neko-portal-soft.webp')" alt="猫娘社 Minecraft 大厅传送门" width="900" height="675" />
@@ -55,7 +55,7 @@ import { useSitePath } from "~/composables/useSitePath";
 
 const { servers, wiki, isRemote, isDemo } = useDemoContent();
 const sitePath = useSitePath();
-const lobby = computed(() => servers.value.find((server) => server.id === "lobby"));
+const lobby = computed(() => servers.value.find((server) => server.id === "lobby") || servers.value.find((server) => server.category === "permanent" && server.status !== "maintenance" && server.status !== "offline"));
 
 const staticToolGroups = [
   {

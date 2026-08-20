@@ -176,7 +176,7 @@ export const activities: ActivityViewModel[] = [
 ];
 
 export const announcements: AnnouncementViewModel[] = [
-  { id: "speedrun", title: "本周速通挑战今晚开局", category: "event", categoryLabel: "活动通知", publishedAt: "今天 18:20", summary: "活动服 20:00 开放，19:45 到大厅服集合。", priority: 100 },
+  { id: "speedrun", title: "本周速通挑战今晚开局", category: "event", categoryLabel: "活动通知", publishedAt: "今天 18:20", summary: "活动服 20:00 开放，19:45 到大厅服集合。", priority: 100, pinned: true },
   { id: "resource", title: "资源服换周目维护", category: "maintenance", categoryLabel: "维护通知", publishedAt: "昨天 22:10", summary: "资源服预计维护到周五晚，期间暂不可进入。", priority: 80 },
   { id: "lobby", title: "大厅服新增传送牌", category: "update", categoryLabel: "服务器更新", publishedAt: "周三 12:30", summary: "新人可直接从大厅服查看所有服务器入口。", priority: 60 },
   { id: "duty", title: "本周值班管理安排", category: "club", categoryLabel: "社团通知", publishedAt: "周一 09:00", summary: "皮肤站、活动和技术问题请按事项联系。", priority: 40 }

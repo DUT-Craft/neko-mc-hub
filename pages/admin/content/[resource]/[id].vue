@@ -2,7 +2,7 @@
   <AdminShell
     :active-key="resource"
     :display-name="session.user.value?.displayName || session.user.value?.username || '管理员'"
-    :pending-count="0"
+    :pending-counts="emptyPendingCounts"
     @logout="logout"
   >
     <section class="admin-content-editor">
@@ -32,7 +32,7 @@
               <div class="admin-editor-grid">
                 <NFormItem v-for="field in meta.fields" :key="field.key" :label="field.label" :class="{ 'admin-field--full': field.full }" :required="field.required">
                   <NInput v-if="field.type === 'text'" v-model:value="payload[field.key]" :disabled="busy" :placeholder="field.placeholder" :maxlength="field.maxLength" :show-count="Boolean(field.maxLength)" @update:value="handleFieldUpdate(field.key)" />
-                  <NInput v-else-if="field.type === 'textarea'" v-model:value="payload[field.key]" :disabled="busy" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" :maxlength="field.maxLength" :show-count="Boolean(field.maxLength)" @update:value="handleFieldUpdate(field.key)" />
+                  <NInput v-else-if="field.type === 'textarea'" v-model:value="payload[field.key]" :disabled="busy" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" :maxlength="field.maxLength" :show-count="Boolean(field.maxLength)" :placeholder="field.placeholder" @update:value="handleFieldUpdate(field.key)" />
                   <NInputNumber v-else-if="field.type === 'number'" v-model:value="payload[field.key]" :disabled="busy" class="admin-field-control" @update:value="handleFieldUpdate(field.key)" />
                   <NSelect v-else-if="field.type === 'select'" v-model:value="payload[field.key]" :disabled="busy" :options="fieldOptions(field.key, field.options)" @update:value="handleFieldUpdate(field.key)" />
                   <NSwitch v-else-if="field.type === 'boolean'" v-model:value="payload[field.key]" :disabled="busy" @update:value="handleFieldUpdate(field.key)" />
@@ -121,6 +121,7 @@ import type { AdminDraft, AdminMedia, AdminFieldOption } from "~/types/admin";
 definePageMeta({ middleware: "admin" });
 
 const route = useRoute();
+const emptyPendingCounts = { reviews: 0, registrations: 0, feedback: 0 };
 const api = useAdminApi();
 const session = useAdminSession();
 const message = useMessage();
@@ -165,30 +166,31 @@ interface ContentField {
 
 const metaMap: Record<string, { title: string; icon?: boolean; cover?: boolean; blocks?: boolean; fields: ContentField[] }> = {
   servers: { title: "服务器", icon: true, blocks: false, fields: [
-    { key: "slug", label: "唯一标识", type: "text", required: true, maxLength: 50 }, { key: "name", label: "名称", type: "text", required: true, maxLength: 100 }, { key: "gameplay", label: "玩法类型", type: "text", required: true, maxLength: 160 },
+    { key: "slug", label: "唯一标识", type: "text", required: true, maxLength: 50, placeholder: "如 redstone，小写字母、数字和连字符" }, { key: "name", label: "名称", type: "text", required: true, maxLength: 100, placeholder: "请输入服务器名称" }, { key: "gameplay", label: "玩法类型", type: "text", required: true, maxLength: 160, placeholder: "如：长期生电 / 模组合作" },
     { key: "category", label: "分类", type: "select", required: true, options: select([{ label: "常驻服", value: "PERMANENT" }, { label: "活动服", value: "ACTIVITY" }]) },
-    { key: "address", label: "服务器地址", type: "text", required: true, maxLength: 255 }, { key: "version", label: "版本", type: "text", required: true, maxLength: 80 }, { key: "pack", label: "整合包说明", type: "text", maxLength: 255 },
-    { key: "description", label: "简介", type: "textarea", full: true, maxLength: 50000 }, { key: "rules", label: "规则", type: "textarea", full: true, maxLength: 50000 },
+    { key: "address", label: "服务器地址", type: "text", required: true, maxLength: 255, placeholder: "如 redstone.neko-mc.club" }, { key: "version", label: "版本", type: "text", required: true, maxLength: 80, placeholder: "如 1.21.1" }, { key: "pack", label: "整合包说明", type: "text", maxLength: 255, placeholder: "不需要整合包 / 整合包名称" },
+    { key: "description", label: "简介", type: "textarea", full: true, maxLength: 50000, placeholder: "玩家会在这里看到服务器是做什么的" }, { key: "rules", label: "规则", type: "textarea", full: true, maxLength: 50000, placeholder: "进入前需要知道的基本规则" },
     { key: "featured", label: "首页优先", type: "boolean" }
   ] },
   activities: { title: "活动", icon: true, cover: true, fields: [
-    { key: "slug", label: "唯一标识", type: "text", required: true, maxLength: 80 }, { key: "name", label: "名称", type: "text", required: true, maxLength: 140 },
+    { key: "slug", label: "唯一标识", type: "text", required: true, maxLength: 80, placeholder: "填写名称后自动生成，也可手动修改" }, { key: "name", label: "名称", type: "text", required: true, maxLength: 140, placeholder: "请输入活动名称" },
     { key: "kind", label: "活动类型", type: "select", required: true, options: select([{ label: "每周活动", value: "WEEKLY" }, { label: "长期项目", value: "LONG_TERM" }, { label: "限时活动", value: "LIMITED" }]) },
     { key: "status", label: "状态", type: "select", required: true, options: select([{ label: "进行中", value: "ACTIVE" }, { label: "即将开始", value: "UPCOMING" }, { label: "长期进行", value: "ONGOING" }, { label: "暂停", value: "PAUSED" }]) },
-    { key: "statusLabel", label: "状态文字", type: "text", maxLength: 60 }, { key: "serverSlug", label: "关联服务器", type: "select", required: true }, { key: "timeText", label: "时间", type: "text", required: true, maxLength: 255 }, { key: "participation", label: "参与方式", type: "text", required: true, maxLength: 255 },
-    { key: "description", label: "简介", type: "textarea", required: true, full: true, maxLength: 50000 }, { key: "requiresPack", label: "需要整合包", type: "boolean" }, { key: "priority", label: "排序优先级", type: "number" }
+    { key: "statusLabel", label: "状态文字", type: "text", maxLength: 60, placeholder: "如：正在进行 / 招募中" }, { key: "serverSlug", label: "关联服务器", type: "select", required: true }, { key: "timeText", label: "时间", type: "text", required: true, maxLength: 255, placeholder: "如：周六 19:45 集合，20:00 开始" }, { key: "participation", label: "参与方式", type: "text", required: true, maxLength: 255, placeholder: "玩家怎么加入这场活动" },
+    { key: "description", label: "简介", type: "textarea", required: true, full: true, maxLength: 50000, placeholder: "活动内容、目标和注意事项" }, { key: "requiresPack", label: "需要整合包", type: "boolean" }, { key: "priority", label: "排序优先级", type: "number" }
   ] },
   announcements: { title: "公告", cover: true, fields: [
-    { key: "slug", label: "唯一标识", type: "text", required: true, maxLength: 80 }, { key: "title", label: "标题", type: "text", required: true, maxLength: 180 }, { key: "category", label: "分类标识", type: "text", maxLength: 30 }, { key: "categoryLabel", label: "分类名称", type: "text", maxLength: 80 },
-    { key: "summary", label: "摘要", type: "textarea", required: true, full: true, maxLength: 500 }, { key: "priority", label: "排序优先级", type: "number" }, { key: "pinned", label: "置顶", type: "boolean" }
+    { key: "slug", label: "唯一标识", type: "text", required: true, maxLength: 80, placeholder: "填写标题后自动生成，也可手动修改" }, { key: "title", label: "标题", type: "text", required: true, maxLength: 180, placeholder: "请输入公告标题" },
+    { key: "category", label: "分类", type: "select", options: select([{ label: "社团通知", value: "club" }, { label: "活动通知", value: "event" }, { label: "维护通知", value: "maintenance" }, { label: "服务器更新", value: "update" }, { label: "其他", value: "other" }]) },
+    { key: "summary", label: "摘要", type: "textarea", required: true, full: true, maxLength: 500, placeholder: "一句话说明这则公告，会显示在列表和首页" }, { key: "priority", label: "排序优先级", type: "number" }, { key: "pinned", label: "置顶", type: "boolean" }
   ] },
   wiki: { title: "Wiki", icon: true, fields: [
-    { key: "slug", label: "唯一标识", type: "text", required: true, maxLength: 80 }, { key: "title", label: "标题", type: "text", required: true, maxLength: 140 }, { key: "summary", label: "摘要", type: "textarea", required: true, full: true, maxLength: 255 },
-    { key: "groupName", label: "分组名称", type: "text", maxLength: 80 }, { key: "linkUrl", label: "相关链接", type: "text", maxLength: 500 }, { key: "sortOrder", label: "排序", type: "number" }
+    { key: "slug", label: "唯一标识", type: "text", required: true, maxLength: 80, placeholder: "填写标题后自动生成，也可手动修改" }, { key: "title", label: "标题", type: "text", required: true, maxLength: 140, placeholder: "请输入栏目标题" }, { key: "summary", label: "摘要", type: "textarea", required: true, full: true, maxLength: 255, placeholder: "一句话说明这个栏目" },
+    { key: "groupName", label: "分组名称", type: "text", maxLength: 80, placeholder: "如：入服指南 / 玩法与资源" }, { key: "linkUrl", label: "相关链接", type: "text", maxLength: 500, placeholder: "https://... 或 /站内路径" }, { key: "sortOrder", label: "排序", type: "number" }
   ] },
   history: { title: "历史活动", cover: true, fields: [
-    { key: "slug", label: "唯一标识", type: "text", required: true, maxLength: 80 }, { key: "title", label: "标题", type: "text", required: true, maxLength: 160 }, { key: "meta", label: "时间与服务器", type: "text", required: true, maxLength: 255 },
-    { key: "altText", label: "封面说明", type: "text", required: true, maxLength: 255 }, { key: "happenedAt", label: "发生时间", type: "text", placeholder: "ISO 时间，可留空" }, { key: "featured", label: "精选展示", type: "boolean" }
+    { key: "slug", label: "唯一标识", type: "text", required: true, maxLength: 80, placeholder: "填写标题后自动生成，也可手动修改" }, { key: "title", label: "标题", type: "text", required: true, maxLength: 160, placeholder: "请输入活动名称" }, { key: "meta", label: "时间与服务器", type: "text", required: true, maxLength: 255, placeholder: "如：7 月 5 日 · 活动服" },
+    { key: "altText", label: "封面说明", type: "text", required: true, maxLength: 255, placeholder: "描述封面图片内容" }, { key: "happenedAt", label: "发生时间", type: "text", placeholder: "ISO 时间，可留空" }, { key: "featured", label: "精选展示", type: "boolean" }
   ] }
 };
 const meta = computed(() => metaMap[resource] || { title: "内容", fields: [] });
@@ -247,6 +249,7 @@ function clone<T>(value: T): T { return JSON.parse(JSON.stringify(value)); }
 function replacePayload(value: Record<string, any>) {
   Object.keys(payload).forEach((key) => delete payload[key]);
   Object.assign(payload, clone(value));
+  autoGeneratedSlugs.clear();
   payload.blocks = (payload.blocks || []).map(normalizeBlock);
 }
 function normalizeBlock(block: any) {
@@ -264,13 +267,33 @@ function normalizeBlock(block: any) {
   }
   return normalized;
 }
+const announcementCategories: Record<string, string> = { club: "社团通知", event: "活动通知", maintenance: "维护通知", update: "服务器更新", other: "其他" };
+const autoGeneratedSlugs = new Set<string>();
+
+function slugifyTitle(value: string): string {
+  const slug = String(value || "").toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+  if (/^[a-z0-9]/.test(slug)) return slug;
+  return `item-${Date.now().toString(36)}`;
+}
+
 function markDirty() {
   editRevision.value += 1;
   dirty.value = true;
 }
 function handleFieldUpdate(key: string) {
+  if ((key === "title" || key === "name") && !String(payload.slug || "").trim() || (key === "title" || key === "name") && autoGeneratedSlugs.has(String(payload.slug || ""))) {
+    const generated = slugifyTitle(String(payload[key] || ""));
+    payload.slug = generated;
+    autoGeneratedSlugs.add(generated);
+  }
   if (resource === "activities" && key === "status") {
     payload.statusLabel = ({ ACTIVE: "进行中", UPCOMING: "即将开始", ONGOING: "长期进行", PAUSED: "暂停" } as Record<string, string>)[payload.status] || payload.statusLabel;
+  }
+  if (resource === "announcements" && key === "category") {
+    payload.categoryLabel = announcementCategories[String(payload.category)] || payload.categoryLabel;
   }
   markDirty();
 }
@@ -327,6 +350,7 @@ async function uploadFile(file: File) {
 function clearCover() { payload.coverMediaId = null; markDirty(); }
 function preparedPayload() {
   const value = clone(payload);
+  if (!String(value.slug || "").trim()) value.slug = slugifyTitle(String(value.title || value.name || ""));
   value.blocks = (value.blocks || []).map((block: Record<string, any>) => {
     const cleaned = { ...block };
     delete cleaned.itemsText;

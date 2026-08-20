@@ -57,12 +57,15 @@ export function useDemoContent() {
   const weeklyActivity = computed(() => sortedActivities.value.find((activity) => activity.kind === "weekly" && activity.status !== "paused"));
   const longTermActivities = computed(() => sortedActivities.value.filter((activity) => activity.kind === "long-term"));
   const limitedActivities = computed(() => sortedActivities.value.filter((activity) => activity.kind === "limited"));
-  const sortedAnnouncements = computed(() => [...content.value.announcements].sort((a, b) => b.priority - a.priority).map((item) => ({ ...item, publishedAt: formatPublishedAt(item.publishedAt) })));
+  const sortedAnnouncements = computed(() => [...content.value.announcements]
+    .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.priority - a.priority)
+    .map((item) => ({ ...item, publishedAt: formatPublishedAt(item.publishedAt) })));
   const totalOnline = computed(() => content.value.totalOnline ?? sortedServers.value.reduce((sum, server) => sum + server.online, 0));
 
   return {
     servers: sortedServers,
     onlineServers,
+    activities: sortedActivities,
     weeklyActivity,
     longTermActivities,
     limitedActivities,

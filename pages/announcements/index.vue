@@ -21,6 +21,7 @@
             <div>
               <span class="section-label">最新公告</span>
               <div class="notice-sign__meta">
+                <NTag v-if="latest.pinned" type="warning" round>置顶</NTag>
                 <NTag type="info" round>{{ latest.categoryLabel }}</NTag>
                 <time>{{ latest.publishedAt }}</time>
               </div>
@@ -30,8 +31,7 @@
           <p>{{ latest.summary }}</p>
           <div class="button-row">
             <NButton type="primary" tag="a" :href="sitePath(`/announcements/${latest.id}`)">阅读该公告</NButton>
-          </div>
-        </div>
+          </div>        </div>
       </NCard>
       <NCard v-else class="notice-sign notice-sign-large" :bordered="false">
         <NSpin v-if="pending" size="small" description="正在读取公告..." />
@@ -43,7 +43,20 @@
           <span class="section-label">更多消息</span>
           <h2>最近公告</h2>
         </div>
-        <AnnouncementList :announcements="otherAnnouncements" />
+        <div v-if="categoryOptions.length > 1" class="notice-feed__filters" role="group" aria-label="公告分类筛选">
+          <NButton
+            v-for="option in categoryOptions"
+            :key="option"
+            size="small"
+            :type="activeCategory === option ? 'primary' : 'default'"
+            :secondary="activeCategory !== option"
+            :aria-pressed="activeCategory === option"
+            @click="activeCategory = option"
+          >
+            {{ option }}
+          </NButton>
+        </div>
+        <AnnouncementList :announcements="filteredAnnouncements" />
       </NCard>
     </section>
 
@@ -74,8 +87,24 @@ import { useSitePath } from "~/composables/useSitePath";
 
 const { announcements, managers, pending } = useDemoContent();
 const sitePath = useSitePath();
+const activeCategory = ref<string>("全部");
 const latest = computed(() => announcements.value[0]);
-const otherAnnouncements = computed(() => announcements.value.slice(1));
+const categoryOptions = computed(() => {
+  const labels = new Set<string>();
+  for (const item of announcements.value.slice(1)) {
+    if (item.categoryLabel) labels.add(item.categoryLabel);
+  }
+  return ["全部", ...labels];
+});
+const filteredAnnouncements = computed(() => {
+  const rest = announcements.value.slice(1);
+  if (activeCategory.value === "全部") return rest;
+  return rest.filter((item) => item.categoryLabel === activeCategory.value);
+});
 
 useHead({ title: "公告栏 - 猫娘社 MC 主站" });
 </script>
+
+<style scoped>
+.notice-feed__filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 12px; }
+</style>

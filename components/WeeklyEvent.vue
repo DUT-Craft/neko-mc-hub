@@ -1,5 +1,5 @@
 <template>
-  <NCard v-if="activity && server" class="weekly-event" :bordered="false">
+  <NCard v-if="activity" class="weekly-event" :bordered="false">
     <div class="weekly-event__media">
       <img
         :src="resolveImage(image)"
@@ -13,7 +13,7 @@
     <div class="weekly-event__content">
       <div class="weekly-event__tags">
         <NTag type="success" round>{{ activity.statusLabel }}</NTag>
-        <NTag round>{{ server.online }}/{{ server.capacity }} 人在线</NTag>
+        <NTag v-if="server" round>{{ server.online }}/{{ server.capacity }} 人在线</NTag>
       </div>
 
       <div class="weekly-event__heading">
@@ -25,24 +25,24 @@
       <p class="weekly-event__description">{{ activity.description }}</p>
 
       <NDescriptions class="event-facts" :column="1" size="small" label-placement="left">
-        <NDescriptionsItem label="服务器">{{ server.name }} · {{ server.version }}</NDescriptionsItem>
+        <NDescriptionsItem v-if="server" label="服务器">{{ server.name }} · {{ server.version }}</NDescriptionsItem>
         <NDescriptionsItem label="参与方式">{{ activity.participation }}</NDescriptionsItem>
       </NDescriptions>
 
-      <div class="address-line">
+      <div v-if="server" class="address-line">
         <span>服务器地址</span>
         <strong>{{ server.address }}</strong>
       </div>
 
       <div class="button-row">
-        <CopyButton :value="server.address" label="复制活动服地址" primary />
+        <CopyButton v-if="server" :value="server.address" label="复制活动服地址" primary />
         <NButton secondary tag="a" :href="sitePath(`/activities/${activity.id}`)">查看活动详情</NButton>
       </div>
     </div>
   </NCard>
   <NCard v-else class="weekly-event weekly-event--empty" :bordered="false">
     <NSpin v-if="loading" size="small" description="正在读取本周活动..." />
-    <NEmpty v-else :description="activity ? '活动关联的服务器暂不可用' : '当前没有正在进行或即将开始的每周活动'" />
+    <NEmpty v-else description="当前没有正在进行或即将开始的每周活动" />
   </NCard>
 </template>
 

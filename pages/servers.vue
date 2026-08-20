@@ -46,6 +46,18 @@
           </NDescriptions>
           <div class="terminal-address"><span>地址</span><strong>{{ selectedServer.address }}</strong></div>
           <p class="terminal-rules">{{ selectedServer.rules }}</p>
+          <div v-if="relatedActivities.length" class="terminal-activities">
+            <span class="terminal-activities__label">这台服务器上的活动</span>
+            <NList :bordered="false" size="small">
+              <NListItem v-for="item in relatedActivities" :key="item.id">
+                <NuxtLink class="terminal-activity-link" :to="`/activities/${item.id}`">
+                  <NTag size="small" round :type="item.status === 'active' || item.status === 'ongoing' ? 'success' : 'default'">{{ item.statusLabel }}</NTag>
+                  <span class="terminal-activity-link__title">{{ item.name }}</span>
+                  <small>{{ item.time }}</small>
+                </NuxtLink>
+              </NListItem>
+            </NList>
+          </div>
           <NSpace wrap>
             <CopyButton v-if="selectedServer.status !== 'maintenance' && selectedServer.status !== 'offline'" :value="selectedServer.address" primary />
             <NButton secondary tag="a" :href="sitePath('/announcements')">查看公告</NButton>
@@ -57,14 +69,14 @@
 </template>
 
 <script setup lang="ts">
-import { NButton, NCard, NDescriptions, NDescriptionsItem, NSpace } from "naive-ui";
+import { NButton, NCard, NDescriptions, NDescriptionsItem, NList, NListItem, NSpace, NTag } from "naive-ui";
 import { useDemoContent } from "~/composables/useDemoContent";
 import { useSitePath } from "~/composables/useSitePath";
 
 type FilterValue = "all" | "activity" | "permanent" | "pack" | "maintenance" | "online";
 const route = useRoute();
 const sitePath = useSitePath();
-const { servers } = useDemoContent();
+const { servers, activities } = useDemoContent();
 const filter = ref<FilterValue>("all");
 const selectedId = ref(typeof route.query.selected === "string" ? route.query.selected : servers.value[0]?.id);
 
@@ -83,6 +95,15 @@ const filteredServers = computed(() => servers.value.filter((server) => {
 }));
 
 const selectedServer = computed(() => servers.value.find((server) => server.id === selectedId.value) || filteredServers.value[0]);
+const relatedActivities = computed(() => activities.value.filter((activity: { serverId: string }) => activity.serverId === selectedServer.value?.id));
 watch(filteredServers, (items) => { if (!items.some((item) => item.id === selectedId.value)) selectedId.value = items[0]?.id; });
 useHead({ title: "全部服务器 - 猫娘社 MC 主站" });
 </script>
+
+<style scoped>
+.terminal-activities { display: grid; gap: 8px; padding: 12px 0 4px; border-top: 1px dashed var(--line); }
+.terminal-activities__label { color: var(--muted); font-size: 12px; font-weight: 700; }
+.terminal-activity-link { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.terminal-activity-link__title { color: var(--ink); font-weight: 600; }
+.terminal-activity-link small { color: var(--muted); }
+</style>

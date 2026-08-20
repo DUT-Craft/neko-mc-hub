@@ -2,7 +2,7 @@
   <AdminShell
     :active-key="activeSection"
     :display-name="session.user.value?.displayName || session.user.value?.username || '管理员'"
-    :pending-count="pendingCount"
+    :pending-counts="pendingCounts"
     @logout="logout"
   >
     <NAlert v-if="errorMessage" type="error" :show-icon="false" class="admin-page-alert" closable @close="errorMessage = ''">{{ errorMessage }}</NAlert>
@@ -75,6 +75,18 @@
       :on-save="(id, status, note) => saveReview('feedback', id, status, note)"
     />
 
+    <AdminUserManager
+      v-else-if="activeSection === 'users'"
+      ref="userManagerRef"
+      :users="users"
+      :current-user-id="session.user.value?.id"
+      :loading="userLoading"
+      :saving="saving"
+      @refresh="loadUsers"
+      @save="saveUser"
+      @disable="disableUser"
+    />
+
     <NResult v-else status="404" title="无法识别这个后台栏目" description="请从左侧重新选择。" />
   </AdminShell>
 </template>
@@ -85,6 +97,7 @@ import AdminOverview from "~/components/admin/AdminOverview.vue";
 import AdminResourceManager from "~/components/admin/AdminResourceManager.vue";
 import AdminReviewQueue from "~/components/admin/AdminReviewQueue.vue";
 import AdminShell from "~/components/admin/AdminShell.vue";
+import AdminUserManager, { type AdminUserRow } from "~/components/admin/AdminUserManager.vue";
 import { useAdminApi } from "~/composables/useAdminApi";
 import { useAdminSession } from "~/composables/useAdminSession";
 import type {
@@ -107,7 +120,7 @@ const message = useMessage();
 const api = useAdminApi();
 const session = useAdminSession();
 
-const sections = ["overview", "servers", "activities", "announcements", "wiki", "history", "contacts", "reviews", "registrations", "feedback", "audit"];
+const sections = ["overview", "servers", "activities", "announcements", "wiki", "history", "contacts", "reviews", "registrations", "feedback", "audit", "users"];
 const activeSection = computed(() => {
   const value = typeof route.query.section === "string" ? route.query.section : "overview";
   return sections.includes(value) ? value : "overview";
@@ -120,6 +133,9 @@ const saving = ref(false);
 const errorMessage = ref("");
 const resourceRows = reactive<Record<string, AdminRow[]>>({ servers: [], activities: [], announcements: [], wiki: [], history: [], contacts: [], audit: [] });
 const resourceLoading = reactive<Record<string, boolean>>({});
+const users = ref<AdminUserRow[]>([]);
+const userLoading = ref(false);
+const userManagerRef = ref<{ setError: (message: string) => void } | null>(null);
 
 const applications = ref<AdminApplication[]>([]);
 const ideas = ref<AdminIdea[]>([]);
@@ -175,13 +191,17 @@ const resourceDefinitions: Record<string, AdminResourceDefinition> = {
     fields: [text("slug", "唯一标识", 60), text("name", "称呼", 80), text("contact", "联系方式", 160), text("responsibilities", "负责事项", 255), number("sortOrder", "排序"), booleanField("published", "公开显示")]
   },
   audit: {
-    key: "audit", title: "操作记录", description: "查看内容发布、下线和审核操作，便于追踪后台变更。", endpoint: "/api/admin/audit-logs", readOnly: true,
-    columns: [{ key: "resourceType", label: "资源" }, { key: "resourceId", label: "编号" }, { key: "action", label: "操作" }, { key: "operatorUserId", label: "操作者" }, { key: "createdAt", label: "时间" }], fields: []
+    key: "audit", title: "操作记录", description: "最近的发布、下线、审核和维护操作（最多显示 200 条），便于追踪后台变更。", endpoint: "/api/admin/audit-logs", readOnly: true,
+    columns: [{ key: "resourceType", label: "对象" }, { key: "resourceId", label: "编号" }, { key: "action", label: "操作" }, { key: "operatorUserId", label: "操作者" }, { key: "createdAt", label: "时间" }], fields: []
   }
 };
 
 const resourceDefinition = computed(() => resourceDefinitions[activeSection.value]);
-const pendingCount = computed(() => overview.value.pendingApplications + overview.value.pendingIdeas + overview.value.pendingRegistrations + overview.value.openFeedback);
+const pendingCounts = computed(() => ({
+  reviews: overview.value.pendingApplications + overview.value.pendingIdeas,
+  registrations: overview.value.pendingRegistrations,
+  feedback: overview.value.openFeedback
+}));
 const applicationReviewItems = computed(() => applications.value.map((item) => ({ id: item.id, title: `${applicationKindLabel(item.kind)} · ${item.name}`, person: `QQ ${item.qq}${item.minecraftId ? ` · MC ${item.minecraftId}` : ""}`, detail: [item.reason, item.purpose, item.expectedTime, item.availableTime, item.skill].filter(Boolean).join(" / ") || "未填写补充说明", privateDetail: [item.studentId ? `学号：${item.studentId}` : "", item.requirements ? `需求：${item.requirements}` : ""].filter(Boolean).join("\n"), createdAt: item.createdAt, status: item.status, note: item.adminNote })) as AdminReviewItem[]);
 const ideaReviewItems = computed(() => ideas.value.map((item) => ({ id: item.id, title: item.title, person: item.nickname, detail: item.description, createdAt: item.createdAt, status: item.status, note: item.publicReply })) as AdminReviewItem[]);
 const registrationReviewItems = computed(() => registrations.value.map((item) => ({ id: item.id, title: `活动报名 · ${item.activitySlug}`, person: `MC ${item.minecraftId} · QQ ${item.qq}`, detail: "玩家已提交活动报名，请确认名额和活动安排。", createdAt: item.createdAt, status: item.status, note: item.adminNote })) as AdminReviewItem[]);
@@ -199,9 +219,46 @@ watch(activeSection, (section) => {
 
 function loadActiveSection(section: string): Promise<void> {
   if (section === "overview") return loadOverview();
+  if (section === "users") return loadUsers();
   if (resourceDefinitions[section]) return loadResource(section);
   if (["reviews", "registrations", "feedback"].includes(section)) return loadReviews(section);
   return Promise.resolve();
+}
+
+async function loadUsers() {
+  clearError();
+  userLoading.value = true;
+  try { users.value = await api.request<AdminUserRow[]>("/api/users"); }
+  catch (error) { setError(error); }
+  finally { userLoading.value = false; }
+}
+
+async function saveUser(payload: Record<string, unknown>, id: number | null, done: () => void) {
+  clearError();
+  saving.value = true;
+  try {
+    await api.request(id === null ? "/api/users/Register" : `/api/users/${id}`, {
+      method: id === null ? "POST" : "PUT",
+      body: payload
+    });
+    message.success(id === null ? "账号已创建" : "账号已更新");
+    await loadUsers();
+    done();
+  } catch (error) {
+    setError(error);
+    userManagerRef.value?.setError(errorMessage.value);
+    message.error(errorMessage.value);
+  } finally { saving.value = false; }
+}
+
+async function disableUser(user: AdminUserRow) {
+  clearError();
+  saving.value = true;
+  try {
+    await api.request(`/api/users/${user.id}`, { method: "DELETE" });
+    message.success("账号已停用");
+    await loadUsers();
+  } catch (error) { setError(error); } finally { saving.value = false; }
 }
 
 async function loadOverview() {
@@ -215,7 +272,36 @@ async function loadResource(key: string) {
   if (!definition) return;
   clearError();
   resourceLoading[key] = true;
-  try { resourceRows[key] = await api.request<AdminRow[]>(definition.endpoint); } catch (error) { setError(error); } finally { resourceLoading[key] = false; }
+  try {
+    const rows = await api.request<AdminRow[]>(definition.endpoint);
+    resourceRows[key] = key === "audit" ? rows.map(localizeAuditRow) : rows;
+  } catch (error) { setError(error); } finally { resourceLoading[key] = false; }
+}
+
+const auditResourceLabels: Record<string, string> = {
+  SERVER: "服务器", ACTIVITY: "活动", ANNOUNCEMENT: "公告", WIKI: "Wiki", HISTORY: "历史活动",
+  CONTACT: "联系人", IDEA: "建议", APPLICATION: "申请", FEEDBACK: "反馈", REGISTRATION: "报名", USER: "用户", MEDIA: "图片"
+};
+const auditActionLabels: Record<string, string> = {
+  PUBLISH: "发布", UNPUBLISH: "下线", RESTORE_PREVIOUS: "恢复上一版本", DELETE: "永久删除",
+  DRAFT_CREATE: "创建草稿", DRAFT_DELETE: "删除草稿",
+  MEDIA_UPLOAD: "上传图片", MEDIA_UPDATE: "更新图片", MEDIA_DELETE: "删除图片",
+  MODERATE_PENDING: "标记待处理", MODERATE_ADOPTED: "通过 / 采纳", MODERATE_HIDDEN: "驳回 / 隐藏",
+  MODERATE_OPEN: "标记待处理", MODERATE_PROCESSING: "标记处理中", MODERATE_CLOSED: "关闭反馈",
+  MODERATE_CONFIRMED: "确认报名", MODERATE_CANCELLED: "取消报名",
+  STATUS_REFRESH: "刷新状态", MAINTENANCE_START: "开始维护", MAINTENANCE_END: "结束维护",
+  CREATE: "新建", UPDATE: "更新"
+};
+
+function localizeAuditRow(row: AdminRow): AdminRow {
+  const type = String(row.resourceType || "");
+  const action = String(row.action || "");
+  return {
+    ...row,
+    resourceType: auditResourceLabels[type] || type,
+    action: auditActionLabels[action] || action,
+    createdAt: row.createdAt ? new Date(String(row.createdAt)).toLocaleString("zh-CN", { dateStyle: "short", timeStyle: "medium" }) : ""
+  };
 }
 
 async function loadReviews(section = activeSection.value) {
