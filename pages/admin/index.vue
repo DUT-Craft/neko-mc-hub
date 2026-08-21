@@ -102,7 +102,6 @@ import { useAdminApi } from "~/composables/useAdminApi";
 import { useAdminSession } from "~/composables/useAdminSession";
 import type {
   AdminApplication,
-  AdminAuditLog,
   AdminFeedback,
   AdminFieldOption,
   AdminIdea,

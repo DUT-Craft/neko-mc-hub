@@ -1,9 +1,5 @@
 import type { AdminMe } from "~/types/admin";
-
-interface AdminRouteContext {
-  path: string;
-  fullPath: string;
-}
+import type { AdminRouteContext } from "~/composables/useAdminApi";
 
 export function useAdminSession(routeContext?: AdminRouteContext) {
   const api = useAdminApi(routeContext);

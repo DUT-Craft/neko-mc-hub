@@ -52,7 +52,9 @@ const { activities } = useDemoContent();
 const { data: activity, error } = await useAsyncData<ActivityViewModel>(`activity-${route.params.slug}`, () => api.request<ActivityViewModel>(`/api/public/activities/${route.params.slug}`));
 const normalizedBlocks = computed(() => normalizeContentBlocks(activity.value?.blocks, activity.value?.description || ""));
 const siblingActivities = computed(() =>
-  activities.value.filter((item) => item.serverId === activity.value?.serverId && item.id !== activity.value?.id).slice(0, 4)
+  activities.value
+    .filter((item) => item.serverId === activity.value?.serverId && item.id !== activity.value?.id && item.status !== "paused")
+    .slice(0, 4)
 );
 useHead(() => ({ title: `${activity.value?.name || "活动详情"} - 猫娘社 MC 主站` }));
 </script>

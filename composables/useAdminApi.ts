@@ -1,7 +1,7 @@
 import type { AdminMe } from "~/types/admin";
 import { useApiClient } from "~/composables/useApiClient";
 
-interface AdminRouteContext {
+export interface AdminRouteContext {
   path: string;
   fullPath: string;
 }

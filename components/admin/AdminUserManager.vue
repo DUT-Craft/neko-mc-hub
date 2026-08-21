@@ -103,7 +103,6 @@ import {
   NSwitch,
   NTag
 } from "naive-ui";
-import { getApiErrorMessage } from "~/composables/useApiClient";
 
 export interface AdminUserRow {
   id: number;
