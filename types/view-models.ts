@@ -119,6 +119,16 @@ export interface ApplicationFormModel {
   skill?: string;
 }
 
+export interface MemberApplicationViewModel {
+  id: number;
+  kind: "SKIN" | "SERVER" | "DUTY";
+  name: string;
+  status: "PENDING" | "ADOPTED" | "HIDDEN";
+  adminNote?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface GalleryItemViewModel {
   id: string;
   title: string;

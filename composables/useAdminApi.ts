@@ -1,10 +1,15 @@
 import type { AdminMe } from "~/types/admin";
 import { useApiClient } from "~/composables/useApiClient";
 
-export function useAdminApi() {
+export interface AdminRouteContext {
+  path: string;
+  fullPath: string;
+}
+
+export function useAdminApi(routeContext?: AdminRouteContext) {
   const sessionUser = useState<AdminMe | null>("admin-session", () => null);
   const sessionInitialized = useState("admin-session-initialized", () => false);
-  const route = useRoute();
+  const route = routeContext || useRoute();
 
   const client = useApiClient({
     onUnauthorized: clearSession

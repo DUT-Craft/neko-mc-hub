@@ -28,7 +28,18 @@
           <p class="admin-review-card__detail">{{ item.detail }}</p>
           <pre v-if="item.privateDetail" class="admin-private-detail">{{ item.privateDetail }}</pre>
           <div class="admin-review-card__actions">
-            <NButton type="primary" size="small" @click="openReview(item)">处理</NButton>
+            <NButton
+              v-if="onDelete"
+              type="error"
+              secondary
+              size="small"
+              :loading="deletingId === item.id"
+              :disabled="saving && deletingId !== item.id"
+              @click="deleteItem(item)"
+            >
+              删除
+            </NButton>
+            <NButton type="primary" size="small" :disabled="saving" @click="openReview(item)">处理</NButton>
           </div>
         </NCard>
       </NGridItem>
@@ -93,6 +104,7 @@ const props = defineProps<{
   noteLabel?: string;
   notePlaceholder?: string;
   onSave: (id: number, status: string, note: string) => Promise<boolean>;
+  onDelete?: (id: number) => Promise<boolean>;
 }>();
 
 defineEmits<{ refresh: [] }>();
@@ -100,6 +112,7 @@ const selected = ref<AdminReviewItem | null>(null);
 const showModal = ref(false);
 const draftStatus = ref("");
 const draftNote = ref("");
+const deletingId = ref<number | null>(null);
 const noteLabel = computed(() => props.noteLabel || "管理员备注");
 const notePlaceholder = computed(() => props.notePlaceholder || "记录处理说明，公开回复请注意措辞");
 
@@ -114,6 +127,17 @@ async function submitReview() {
   if (!selected.value || props.saving) return;
   const saved = await props.onSave(selected.value.id, draftStatus.value, draftNote.value);
   if (saved) showModal.value = false;
+}
+
+async function deleteItem(item: AdminReviewItem) {
+  if (!props.onDelete || props.saving) return;
+  if (!window.confirm(`确定永久删除申请 #${item.id} 吗？删除后无法恢复。`)) return;
+  deletingId.value = item.id;
+  try {
+    await props.onDelete(item.id);
+  } finally {
+    deletingId.value = null;
+  }
 }
 
 function formatDate(value: string) {

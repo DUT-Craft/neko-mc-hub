@@ -3,6 +3,7 @@
     <NListItem v-for="announcement in announcements" :key="announcement.id" class="announcement-card">
       <NuxtLink class="announcement-card__link" :to="`/announcements/${announcement.id}`">
         <div class="announcement-card__meta">
+          <NTag v-if="announcement.pinned" type="warning" size="small" round>置顶</NTag>
           <NTag :type="tagType(announcement.category)" round>{{ announcement.categoryLabel }}</NTag>
           <time>{{ announcement.publishedAt }}</time>
         </div>
@@ -30,7 +31,8 @@ function tagType(category: AnnouncementViewModel["category"]) {
     event: "info",
     maintenance: "warning",
     update: "success",
-    club: "default"
+    club: "default",
+    other: "default"
   };
   return types[category] || "default";
 }

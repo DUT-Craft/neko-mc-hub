@@ -1,7 +1,8 @@
 import type { AdminMe } from "~/types/admin";
+import type { AdminRouteContext } from "~/composables/useAdminApi";
 
-export function useAdminSession() {
-  const api = useAdminApi();
+export function useAdminSession(routeContext?: AdminRouteContext) {
+  const api = useAdminApi(routeContext);
   const user = useState<AdminMe | null>("admin-session", () => null);
   const initialized = useState("admin-session-initialized", () => false);
   const restoring = useState("admin-session-restoring", () => false);

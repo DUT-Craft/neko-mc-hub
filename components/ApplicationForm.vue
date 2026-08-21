@@ -68,7 +68,7 @@ import { useMemberSession } from "~/composables/useMemberSession";
 import type { ApplicationFormModel, ApplicationKind } from "~/types/view-models";
 
 const props = defineProps<{ kind: ApplicationKind }>();
-const emit = defineEmits<{ loginRequired: [] }>();
+const emit = defineEmits<{ loginRequired: []; submitted: [] }>();
 const message = useMessage();
 const formRef = ref<FormInst | null>(null);
 const submitting = ref(false);
@@ -125,6 +125,7 @@ async function submit() {
     message.success(`申请已提交，编号 #${result.id}`);
     Object.assign(model, emptyModel());
     formRef.value?.restoreValidation();
+    emit("submitted");
   } catch (error: unknown) {
     message.error(getApiErrorMessage(error, "提交失败，请稍后重试"));
   } finally {

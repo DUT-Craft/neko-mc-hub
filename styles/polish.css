@@ -3244,6 +3244,7 @@ img {
   min-width: 0;
   width: auto;
   flex: 1 1 0;
+  padding-inline-start: 16px;
 }
 
 .admin-record-card > .n-list-item__suffix {
@@ -3296,6 +3297,7 @@ img {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 7px 14px;
+  padding-inline-start: 4px;
   margin-top: 11px;
   color: var(--muted);
   font-size: 12px;
@@ -3445,6 +3447,7 @@ img {
   .admin-record-card { align-items: stretch; flex-direction: column; gap: 12px; }
   .admin-record-card > .n-list-item__main,
   .admin-record-card > .n-list-item__suffix { width: 100%; }
+  .admin-record-card > .n-list-item__main { padding-inline-start: 0; }
   .admin-record-card > .n-list-item__suffix { min-width: 0; max-width: none; margin-left: 0; flex: 0 0 auto; }
   .admin-record-card__actions { justify-content: flex-start; }
 }
@@ -3492,6 +3495,7 @@ img {
   .admin-record-card { align-items: stretch; flex-direction: column; gap: 11px; }
   .admin-record-card > .n-list-item__main,
   .admin-record-card > .n-list-item__suffix { width: 100%; }
+  .admin-record-card > .n-list-item__main { padding-inline-start: 0; }
   .admin-record-card > .n-list-item__suffix { min-width: 0; margin-left: 0; }
   .admin-record-card__title h3 { white-space: normal; }
   .admin-record-card__facts { display: grid; gap: 5px; }

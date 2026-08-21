@@ -65,7 +65,11 @@ import { minecraftIconUrl } from "~/utils/minecraftIcons";
 const props = defineProps<{
   activeKey: string;
   displayName: string;
-  pendingCount: number;
+  pendingCounts: {
+    reviews: number;
+    registrations: number;
+    feedback: number;
+  };
 }>();
 
 defineEmits<{ logout: [] }>();
@@ -75,7 +79,6 @@ const sitePath = useSitePath();
 const sidebarOpen = ref(false);
 const hydrated = ref(false);
 const visibleDisplayName = computed(() => hydrated.value ? props.displayName : "管理员");
-const visiblePendingCount = computed(() => hydrated.value ? props.pendingCount : 0);
 
 onMounted(() => { hydrated.value = true; });
 
@@ -90,7 +93,8 @@ const navItems = [
   { key: "reviews", label: "审核队列", icon: "apply" },
   { key: "registrations", label: "活动报名", icon: "chest" },
   { key: "feedback", label: "私密反馈", icon: "guide" },
-  { key: "audit", label: "操作记录", icon: "rules" }
+  { key: "audit", label: "操作记录", icon: "rules" },
+  { key: "users", label: "用户账号", icon: "pack" }
 ];
 
 const navOptions = computed<MenuOption[]>(() => navItems.map((item) => ({
@@ -101,10 +105,15 @@ const navOptions = computed<MenuOption[]>(() => navItems.map((item) => ({
     alt: "",
     "aria-hidden": "true"
   }),
-  extra: item.key === "reviews" && visiblePendingCount.value > 0
-    ? () => h(NBadge, { value: visiblePendingCount.value, max: 99, type: "warning" })
+  extra: pendingCountFor(item.key) > 0
+    ? () => h(NBadge, { value: pendingCountFor(item.key), max: 99, type: "warning" })
     : undefined
 })));
+
+function pendingCountFor(key: string): number {
+  if (!hydrated.value || !(key in props.pendingCounts)) return 0;
+  return props.pendingCounts[key as keyof typeof props.pendingCounts];
+}
 
 const currentLabel = computed(() => navItems.find((item) => item.key === props.activeKey)?.label || "总览");
 watch(() => route.fullPath, () => { sidebarOpen.value = false; });
