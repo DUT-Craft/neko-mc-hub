@@ -35,6 +35,7 @@
         note-label="管理员备注"
         @refresh="loadReviews"
         :on-save="(id, status, note) => saveReview('applications', id, status, note)"
+        :on-delete="deleteApplication"
       />
       <AdminReviewQueue
         title="项目建议审核"
@@ -410,6 +411,21 @@ async function saveReview(kind: "applications" | "ideas" | "registrations" | "fe
     await api.request(`/api/admin/${kind}/${id}`, { method: "PATCH", body: { status, note: note.trim() || null } });
     message.success("处理结果已保存");
     await Promise.all([loadReviews(), loadOverview()]);
+    return true;
+  } catch (error) {
+    setError(error);
+    message.error(errorMessage.value);
+    return false;
+  } finally { saving.value = false; }
+}
+
+async function deleteApplication(id: number): Promise<boolean> {
+  clearError();
+  saving.value = true;
+  try {
+    await api.request(`/api/admin/applications/${id}`, { method: "DELETE" });
+    message.success("申请已删除");
+    await Promise.all([loadReviews("reviews"), loadOverview()]);
     return true;
   } catch (error) {
     setError(error);

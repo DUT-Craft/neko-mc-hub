@@ -46,10 +46,18 @@
               <h2>{{ activeMeta.title }}</h2>
             </div>
           </div>
-          <ApplicationForm :key="activeTab" :kind="activeTab" @login-required="openMemberLogin" />
+          <ApplicationForm :key="activeTab" :kind="activeTab" @login-required="openMemberLogin" @submitted="loadMyApplications" />
         </NCard>
       </div>
     </section>
+
+    <MemberApplicationHistory
+      v-if="isAuthenticated"
+      :items="myApplications"
+      :loading="applicationHistoryLoading"
+      :error="applicationHistoryError"
+      @refresh="loadMyApplications"
+    />
 
     <CommunityParticipation :ideas="ideas || []" @refresh="refreshIdeas" @login-required="openMemberLogin" />
   </main>
@@ -57,7 +65,9 @@
 
 <script setup lang="ts">
 import { NCard, NList, NListItem, NRadioButton, NRadioGroup, NTag } from "naive-ui";
-import type { ApplicationKind, IdeaViewModel } from "~/types/view-models";
+import type { ApplicationKind, IdeaViewModel, MemberApplicationViewModel } from "~/types/view-models";
+import { getApiErrorMessage } from "~/composables/useApiClient";
+import { useMemberSession } from "~/composables/useMemberSession";
 import { usePublicApi } from "~/composables/usePublicApi";
 import { useSitePath } from "~/composables/useSitePath";
 
@@ -65,6 +75,10 @@ const activeTab = ref<ApplicationKind>("skin");
 const sessionPanel = ref<{ openLogin: () => void } | null>(null);
 const sitePath = useSitePath();
 const publicApi = usePublicApi();
+const { isAuthenticated, restore: restoreMemberSession, request: memberRequest } = useMemberSession();
+const myApplications = ref<MemberApplicationViewModel[]>([]);
+const applicationHistoryLoading = ref(false);
+const applicationHistoryError = ref("");
 const { data: ideas, refresh: refreshIdeas } = await useAsyncData<IdeaViewModel[]>(
   "public-ideas",
   () => publicApi.request<IdeaViewModel[]>("/api/public/ideas"),
@@ -92,6 +106,32 @@ const meta = {
 };
 
 const activeMeta = computed(() => meta[activeTab.value]);
+
+onMounted(() => {
+  void restoreMemberSession();
+});
+
+watch(isAuthenticated, (authenticated) => {
+  if (authenticated) void loadMyApplications();
+  else {
+    myApplications.value = [];
+    applicationHistoryError.value = "";
+  }
+}, { immediate: true });
+
+async function loadMyApplications() {
+  if (!isAuthenticated.value || applicationHistoryLoading.value) return;
+  applicationHistoryLoading.value = true;
+  applicationHistoryError.value = "";
+  try {
+    myApplications.value = await memberRequest<MemberApplicationViewModel[]>("/api/public/applications/mine");
+  } catch (error: unknown) {
+    applicationHistoryError.value = getApiErrorMessage(error, "申请进度读取失败，请稍后重试");
+  } finally {
+    applicationHistoryLoading.value = false;
+  }
+}
+
 function openMemberLogin() {
   sessionPanel.value?.openLogin();
 }
