@@ -5,6 +5,7 @@ export function useMemberSession() {
   const user = useState<SessionUser | null>("member-session", () => null);
   const initialized = useState("member-session-initialized", () => false);
   const restoring = useState("member-session-restoring", () => false);
+  const restoreTask = useState<Promise<boolean> | null>("member-session-restore-task", () => null);
 
   const api = useApiClient({
     onUnauthorized: clearSession
@@ -13,23 +14,29 @@ export function useMemberSession() {
   const isAuthenticated = computed(() => user.value?.authenticated === true);
 
   async function restore() {
-    if (initialized.value || restoring.value) return isAuthenticated.value;
+    if (restoreTask.value) return restoreTask.value;
+    if (initialized.value) return isAuthenticated.value;
     if (!import.meta.client) {
       initialized.value = true;
       return false;
     }
 
-    restoring.value = true;
-    try {
-      const me = await api.request<SessionUser>("/api/auth/me");
-      user.value = me.authenticated ? me : null;
-    } catch {
-      clearSession();
-    } finally {
-      restoring.value = false;
-      initialized.value = true;
-    }
-    return isAuthenticated.value;
+    const task = (async () => {
+      restoring.value = true;
+      try {
+        const me = await api.request<SessionUser>("/api/auth/me");
+        user.value = me.authenticated ? me : null;
+      } catch {
+        clearSession();
+      } finally {
+        restoring.value = false;
+        initialized.value = true;
+        restoreTask.value = null;
+      }
+      return isAuthenticated.value;
+    })();
+    restoreTask.value = task;
+    return task;
   }
 
   async function login(username: string, password: string) {

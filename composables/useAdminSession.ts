@@ -6,29 +6,36 @@ export function useAdminSession(routeContext?: AdminRouteContext) {
   const user = useState<AdminMe | null>("admin-session", () => null);
   const initialized = useState("admin-session-initialized", () => false);
   const restoring = useState("admin-session-restoring", () => false);
+  const restoreTask = useState<Promise<boolean> | null>("admin-session-restore-task", () => null);
 
   const isAdmin = computed(() => user.value?.authenticated === true && user.value.role === "ADMIN");
 
   async function restore() {
-    if (initialized.value || restoring.value) return isAdmin.value;
+    if (restoreTask.value) return restoreTask.value;
+    if (initialized.value) return isAdmin.value;
     if (!import.meta.client) {
       initialized.value = true;
       return false;
     }
 
-    restoring.value = true;
-    try {
-      const me = await api.request<AdminMe>("/api/auth/me");
-      user.value = me.authenticated ? me : null;
-      if (!isAdmin.value) api.clearSession();
-    } catch {
-      user.value = null;
-      api.clearSession();
-    } finally {
-      restoring.value = false;
-      initialized.value = true;
-    }
-    return isAdmin.value;
+    const task = (async () => {
+      restoring.value = true;
+      try {
+        const me = await api.request<AdminMe>("/api/auth/me");
+        user.value = me.authenticated ? me : null;
+        if (!isAdmin.value) api.clearSession();
+      } catch {
+        user.value = null;
+        api.clearSession();
+      } finally {
+        restoring.value = false;
+        initialized.value = true;
+        restoreTask.value = null;
+      }
+      return isAdmin.value;
+    })();
+    restoreTask.value = task;
+    return task;
   }
 
   async function login(username: string, password: string) {

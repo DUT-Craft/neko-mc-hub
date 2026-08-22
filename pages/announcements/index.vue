@@ -31,7 +31,8 @@
           <p>{{ latest.summary }}</p>
           <div class="button-row">
             <NButton type="primary" tag="a" :href="sitePath(`/announcements/${latest.id}`)">阅读该公告</NButton>
-          </div>        </div>
+          </div>
+        </div>
       </NCard>
       <NCard v-else class="notice-sign notice-sign-large" :bordered="false">
         <NSpin v-if="pending" size="small" description="正在读取公告..." />

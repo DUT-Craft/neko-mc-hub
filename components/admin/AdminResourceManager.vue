@@ -43,7 +43,7 @@
             <NButton v-if="definition.key === 'servers' && hasPublishedRecord(row)" secondary size="small" :disabled="saving" @click="$emit('refresh-status', row)">检测状态</NButton>
             <NButton secondary size="small" :disabled="saving" @click="openEdit(row)">{{ row.draftId && row.hasUnpublishedChanges ? "编辑草稿" : "编辑" }}</NButton>
             <NButton v-if="hasPublishedRecord(row) && row.published !== false" tertiary size="small" type="warning" :disabled="saving" @click="$emit('hide', row)">下线</NButton>
-            <NButton v-if="hasPublishedRecord(row) && row.published === false" tertiary size="small" type="error" :disabled="saving" @click="$emit('delete-resource', row)">永久删除</NButton>
+            <NButton v-if="definition.dedicatedEditor && hasPublishedRecord(row) && row.published === false" tertiary size="small" type="error" :disabled="saving" @click="$emit('delete-resource', row)">永久删除</NButton>
             <NButton v-if="!hasPublishedRecord(row) && row.draftId" tertiary size="small" type="error" :disabled="saving" @click="$emit('delete-draft', row)">删除草稿</NButton>
           </NSpace>
         </template>

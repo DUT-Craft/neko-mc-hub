@@ -28,7 +28,7 @@ const normalizedBlocks = computed(() => normalizeContentBlocks(announcement.valu
 function formatPublishedAt(value: string | null) {
   if (!value) return "未标注时间";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("zh-CN", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("zh-CN", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Shanghai" });
 }
 useHead(() => ({ title: `${announcement.value?.title || "公告详情"} - 猫娘社 MC 主站` }));
 </script>
